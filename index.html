@@ -89,6 +89,7 @@ button{font:inherit; color:inherit; cursor:pointer}
 .btn{border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:9px 16px; font-weight:500}
 .btn:hover:not(:disabled){border-color:var(--accent)}
 .btn:disabled{opacity:.4; cursor:default}
+a.btn{text-decoration:none; color:var(--ink)}
 .btn.primary{background:var(--navy); color:#fff; border-color:var(--navy)}
 .toggle{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-inline-start:auto}
 .toggle input{accent-color:var(--accent); width:16px; height:16px}
@@ -141,7 +142,7 @@ body.present .wrap{grid-template-columns:minmax(0,1fr); max-width:1600px}
   </aside>
 
   <section class="stage">
-    <div class="player"><div id="yt"></div></div>
+    <div class="player"><iframe id="yt" title="مشغّل الفيديو" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
 
     <div class="meta">
       <div class="crumb"><span class="chip" id="mGroup"></span><span id="mPos"></span><span>·</span><span id="mDur" style="font-family:var(--mono)"></span></div>
@@ -151,6 +152,7 @@ body.present .wrap{grid-template-columns:minmax(0,1fr); max-width:1600px}
         <button class="btn" id="prevBtn" type="button">→ السابق</button>
         <button class="btn primary" id="nextBtn" type="button">التالي ←</button>
         <button class="btn" id="markBtn" type="button">✓ تمت المشاهدة</button>
+        <a class="btn" id="ytLink" href="#" target="_blank" rel="noopener">فتح في يوتيوب ↗</a>
         <label class="toggle"><input type="checkbox" id="autoNext" checked> تشغيل التالي تلقائياً</label>
       </div>
       <div class="hint">اختصارات: <kbd>←</kbd> التالي · <kbd>→</kbd> السابق · <kbd>P</kbd> وضع العرض · <kbd>/</kbd> بحث</div>
@@ -205,6 +207,7 @@ try { watched = new Set(JSON.parse(localStorage.getItem("gb-watched")||"[]")); }
 const save = () => { try { localStorage.setItem("gb-watched", JSON.stringify([...watched])); } catch(e){} };
 
 let current = 0, player = null, ready = false;
+const embed = (id, auto) => `https://www.youtube.com/embed/${id}?enablejsapi=1&playsinline=1&rel=0&modestbranding=1&hl=ar${auto?"&autoplay=1":""}&origin=${encodeURIComponent(location.origin)}`;
 
 function renderList(filter=""){
   const q = filter.trim().toLowerCase(); let shown = 0, html = "";
@@ -246,6 +249,7 @@ function renderMeta(){
   const nx = FLAT[current+1];
   $("#upNext").hidden = !nx;
   if(nx){ $("#unImg").src = `https://i.ytimg.com/vi/${nx.id}/mqdefault.jpg`; $("#unTitle").textContent = nx.title; }
+  $("#ytLink").href = "https://youtu.be/" + v.id;
   document.title = v.title + " · معرض تجارب Grok Bot";
 }
 
@@ -259,7 +263,7 @@ function go(i, autoplay=true){
       /* mobile browsers may block autoplay: fall back to a cued video the viewer taps to play */
       setTimeout(()=>{ try{ const st=player.getPlayerState(); if(st===-1) player.cueVideoById(FLAT[i].id); }catch(e){} }, 1500);
     } else player.cueVideoById(FLAT[i].id);
-  }
+  } else { $("#yt").src = embed(FLAT[i].id, autoplay); }
   if(window.matchMedia("(max-width: 900px)").matches){
     document.querySelector(".player").scrollIntoView({behavior:"smooth", block:"start"});
   } else { const a = document.querySelector(".item.active"); a && a.scrollIntoView({block:"nearest"}); }
@@ -270,8 +274,6 @@ function markWatched(id, on=true){ on ? watched.add(id) : watched.delete(id); sa
 /* YouTube IFrame API */
 window.onYouTubeIframeAPIReady = function(){
   player = new YT.Player("yt", {
-    videoId: FLAT[current].id,
-    playerVars: { rel:0, modestbranding:1, playsinline:1, hl:"ar", origin: location.origin },
     events: {
       onReady: ()=>{ ready = true; },
       onStateChange: e=>{
@@ -311,6 +313,7 @@ window.addEventListener("hashchange", ()=>{ const m=location.hash.match(/^#v(\d+
 const m = location.hash.match(/^#v(\d+)$/);
 if(m && +m[1]>=1 && +m[1]<=FLAT.length) current = +m[1]-1;
 renderStats(); renderMeta(); renderList();
+$("#yt").src = embed(FLAT[current].id, false);
 const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(s);
 </script>
 </body>
