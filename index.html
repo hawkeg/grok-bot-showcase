@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>معرض تجارب Grok Bot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -253,8 +254,15 @@ function go(i, autoplay=true){
   current = i;
   if(location.hash !== "#v"+(i+1)) history.replaceState(null,"","#v"+(i+1));
   renderMeta(); renderList($("#q").value);
-  if(ready){ autoplay ? player.loadVideoById(FLAT[i].id) : player.cueVideoById(FLAT[i].id); }
-  const a = document.querySelector(".item.active"); a && a.scrollIntoView({block:"nearest"});
+  if(ready){
+    if(autoplay){ player.loadVideoById(FLAT[i].id);
+      /* mobile browsers may block autoplay: fall back to a cued video the viewer taps to play */
+      setTimeout(()=>{ try{ const st=player.getPlayerState(); if(st===-1) player.cueVideoById(FLAT[i].id); }catch(e){} }, 1500);
+    } else player.cueVideoById(FLAT[i].id);
+  }
+  if(window.matchMedia("(max-width: 900px)").matches){
+    document.querySelector(".player").scrollIntoView({behavior:"smooth", block:"start"});
+  } else { const a = document.querySelector(".item.active"); a && a.scrollIntoView({block:"nearest"}); }
 }
 
 function markWatched(id, on=true){ on ? watched.add(id) : watched.delete(id); save(); renderStats(); renderList($("#q").value); renderMeta(); }
@@ -263,7 +271,7 @@ function markWatched(id, on=true){ on ? watched.add(id) : watched.delete(id); sa
 window.onYouTubeIframeAPIReady = function(){
   player = new YT.Player("yt", {
     videoId: FLAT[current].id,
-    playerVars: { rel:0, modestbranding:1, playsinline:1, hl:"ar" },
+    playerVars: { rel:0, modestbranding:1, playsinline:1, hl:"ar", origin: location.origin },
     events: {
       onReady: ()=>{ ready = true; },
       onStateChange: e=>{
