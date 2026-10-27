@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>معرض تجارب Grok Bot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: index rail on the right (RTL start), player stage on the left; stacks on phones */
+:root{
+  --bg:#f3f4f7; --panel:#ffffff; --ink:#141b2d; --muted:#5b6478; --line:#dfe2ea;
+  --navy:#16213d; --accent:#e8a23a; --accent-ink:#7a4d05; --accent-soft:#fbefd9; --ok:#2f8a5b;
+  --display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --radius:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0d1324; --panel:#151d33; --ink:#e9ecf4; --muted:#9aa3b8; --line:#26304a;
+    --navy:#0a0f1d; --accent:#f0b04f; --accent-ink:#f0b04f; --accent-soft:#2a2414; --ok:#5cc18c; color-scheme:dark}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; line-height:1.6;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* Header */
+.top{background:var(--navy); color:#fff}
+.top-in{max-width:1400px; margin:0 auto; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  padding-block:18px; padding-left:max(20px,env(safe-area-inset-left,0px)); padding-right:max(20px,env(safe-area-inset-right,0px))}
+.brand{display:flex; flex-direction:column; gap:2px; min-width:0}
+.brand small{font-family:var(--mono); font-size:11px; letter-spacing:.12em; color:var(--accent); text-transform:uppercase}
+.brand h1{font-family:var(--display); font-weight:700; font-size:clamp(20px,2.6vw,28px); margin:0; line-height:1.25}
+.stats{margin-inline-start:auto; display:flex; gap:22px; align-items:center; flex-wrap:wrap}
+.stat{display:flex; flex-direction:column; align-items:flex-start}
+.stat b{font-family:var(--mono); font-size:20px; font-variant-numeric:tabular-nums; line-height:1.1}
+.stat span{font-size:12px; color:#aeb6cc}
+.prog{width:140px; height:6px; background:rgba(255,255,255,.15); border-radius:3px; overflow:hidden; margin-top:6px}
+.prog i{display:block; height:100%; width:0; background:var(--accent); transition:width .4s}
+.iconbtn{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); color:#fff; border-radius:8px; padding:8px 12px; font-size:13px}
+.iconbtn:hover{background:rgba(255,255,255,.16)}
+
+/* Main grid */
+.wrap{max-width:1400px; margin:0 auto; display:grid; grid-template-columns:340px minmax(0,1fr); gap:24px;
+  padding-block:24px; padding-left:max(20px,env(safe-area-inset-left,0px)); padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+/* Index (right side because of RTL) */
+.index{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); align-self:start;
+  position:sticky; top:16px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; overflow:hidden}
+.index-head{padding:14px 14px 10px; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:10px}
+.index-head h2{font-family:var(--display); font-size:15px; margin:0; display:flex; justify-content:space-between; align-items:center}
+.index-head h2 span{font-family:var(--mono); font-size:12px; color:var(--muted); font-weight:500}
+.search{width:100%; border:1px solid var(--line); background:var(--bg); border-radius:8px; padding:8px 12px; font:inherit; color:var(--ink)}
+.list{overflow-y:auto; padding:6px 8px 12px}
+.group{margin-top:10px}
+.group-title{font-size:11.5px; font-weight:600; color:var(--muted); letter-spacing:.04em; padding:6px 8px; display:flex; justify-content:space-between}
+.group-title em{font-style:normal; font-family:var(--mono)}
+.item{width:100%; display:grid; grid-template-columns:28px minmax(0,1fr) auto; gap:10px; align-items:center;
+  text-align:right; background:none; border:0; border-radius:8px; padding:9px 8px; position:relative}
+.item:hover{background:var(--bg)}
+.item .num{font-family:var(--mono); font-size:12px; color:var(--muted); width:26px; height:26px; border-radius:50%;
+  display:grid; place-items:center; border:1px solid var(--line); font-variant-numeric:tabular-nums}
+.item.done .num{background:var(--ok); border-color:var(--ok); color:#fff}
+.item .t{min-width:0}
+.item .t b{display:block; font-weight:600; font-size:14px; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.item .t small{display:block; font-size:11.5px; color:var(--muted); font-family:var(--mono); direction:ltr; text-align:right}
+.item .d{font-family:var(--mono); font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.item.active{background:var(--accent-soft)}
+.item.active::before{content:""; position:absolute; right:-8px; top:8px; bottom:8px; width:3px; border-radius:3px; background:var(--accent)}
+.item.active .num{border-color:var(--accent); color:var(--accent-ink); font-weight:700}
+.item.active.done .num{color:#fff}
+.empty{padding:20px; color:var(--muted); text-align:center; font-size:13px}
+
+/* Stage */
+.stage{min-width:0; display:flex; flex-direction:column; gap:16px}
+.player{position:relative; width:100%; max-width:100%; aspect-ratio:16/9; background:#000; border-radius:var(--radius); overflow:hidden}
+.player > div, .player iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.meta{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; display:flex; flex-direction:column; gap:12px}
+.crumb{font-size:12.5px; color:var(--muted); display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.chip{background:var(--accent-soft); color:var(--accent-ink); border-radius:999px; padding:2px 10px; font-weight:600; font-size:12px}
+.meta h2{font-family:var(--display); font-size:clamp(20px,2.4vw,26px); margin:0; line-height:1.3; text-wrap:balance}
+.meta p{margin:0; color:var(--muted); max-width:70ch}
+.controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.btn{border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:9px 16px; font-weight:500}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.4; cursor:default}
+.btn.primary{background:var(--navy); color:#fff; border-color:var(--navy)}
+.toggle{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-inline-start:auto}
+.toggle input{accent-color:var(--accent); width:16px; height:16px}
+.hint{font-size:12px; color:var(--muted)}
+.hint kbd{font-family:var(--mono); font-size:11px; border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:0 5px; background:var(--panel)}
+.upnext{display:flex; gap:12px; align-items:center; background:var(--panel); border:1px dashed var(--line); border-radius:var(--radius); padding:10px 12px; text-align:right; width:100%}
+.upnext img{width:112px; aspect-ratio:16/9; object-fit:cover; border-radius:6px; flex:none; background:var(--line)}
+.upnext div{min-width:0}
+.upnext small{color:var(--muted); font-size:12px}
+.upnext b{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+/* Presentation mode: hide index & header */
+body.present .top, body.present .index, body.present .upnext, body.present .hint{display:none}
+body.present .wrap{grid-template-columns:minmax(0,1fr); max-width:1600px}
+
+@media (max-width: 900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  .index{position:static; max-height:none; order:2}
+  .stage{order:1}
+  .stats{margin-inline-start:0; width:100%; justify-content:space-between}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <small>Grok Bot · Demos</small>
+      <h1>معرض التجارب</h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="sCount">13</b><span>تجربة</span></div>
+      <div class="stat"><b id="sTotal">0:00</b><span>إجمالي المدة</span></div>
+      <div class="stat"><b id="sDone">0 / 13</b><span>شاهدتها</span><div class="prog"><i id="sBar"></i></div></div>
+      <button class="iconbtn" id="presentBtn" type="button" title="وضع العرض (P)">وضع العرض ⛶</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside class="index" aria-label="فهرس التجارب">
+    <div class="index-head">
+      <h2>الفهرس <span id="visibleCount"></span></h2>
+      <input id="q" class="search" type="search" placeholder="ابحث في التجارب…" autocomplete="off">
+    </div>
+    <nav class="list" id="list"></nav>
+  </aside>
+
+  <section class="stage">
+    <div class="player"><div id="yt"></div></div>
+
+    <div class="meta">
+      <div class="crumb"><span class="chip" id="mGroup"></span><span id="mPos"></span><span>·</span><span id="mDur" style="font-family:var(--mono)"></span></div>
+      <h2 id="mTitle"></h2>
+      <p id="mDesc"></p>
+      <div class="controls">
+        <button class="btn" id="prevBtn" type="button">→ السابق</button>
+        <button class="btn primary" id="nextBtn" type="button">التالي ←</button>
+        <button class="btn" id="markBtn" type="button">✓ تمت المشاهدة</button>
+        <label class="toggle"><input type="checkbox" id="autoNext" checked> تشغيل التالي تلقائياً</label>
+      </div>
+      <div class="hint">اختصارات: <kbd>←</kbd> التالي · <kbd>→</kbd> السابق · <kbd>P</kbd> وضع العرض · <kbd>/</kbd> بحث</div>
+    </div>
+
+    <button class="upnext" id="upNext" type="button" hidden>
+      <img id="unImg" alt="">
+      <div><small>التالي</small><b id="unTitle"></b></div>
+    </button>
+  </section>
+</main>
+
+<script>
+/* ============================================================
+   البيانات — عدّل العناوين والأوصاف والأقسام من هنا فقط.
+   id = معرّف فيديو يوتيوب (11 حرف) · desc اختياري
+   ============================================================ */
+const GROUPS = [
+  { name: "Boss — المساعد التنفيذي", items: [
+    { id:"TlV1yO2BC3Y", title:"لوحة المدير", en:"boss dashboard", dur:"5:41", desc:"" },
+    { id:"S8Q9mXb733Y", title:"المالية مع Boss", en:"boss finance", dur:"6:15", desc:"" },
+    { id:"znwY2ohE1s8", title:"العُهد والمصروفات النثرية", en:"boss petty cash", dur:"3:49", desc:"" },
+    { id:"QHwnfgxMHNo", title:"إنشاء الفيديوهات", en:"boss create videos", dur:"1:28", desc:"" },
+  ]},
+  { name: "بوتات الأقسام", items: [
+    { id:"PxCUhrVKnbw", title:"بوتات المشتريات", en:"purchase bots", dur:"7:01", desc:"" },
+    { id:"U6bbFEeBRxw", title:"بوت الموارد البشرية", en:"hr bot", dur:"2:18", desc:"" },
+    { id:"knBg2jLj-Ok", title:"البريد الإلكتروني", en:"email", dur:"1:22", desc:"" },
+    { id:"crirZVEasN8", title:"المساعد الصوتي", en:"AI voice", dur:"1:55", desc:"" },
+    { id:"I3vzwF_lT_s", title:"Grok Bot — Orca", en:"grok bot orca", dur:"1:28", desc:"" },
+  ]},
+  { name: "التخطيط والمشاريع", items: [
+    { id:"NnE9b-q1tr4", title:"Primavera — الجزء الأول", en:"primavera", dur:"2:00", desc:"" },
+    { id:"qrCwu2XWUr4", title:"Primavera — الجزء الثاني", en:"primavera 2", dur:"0:35", desc:"" },
+    { id:"pRGtn7XjNbU", title:"Procore", en:"procore", dur:"6:30", desc:"" },
+    { id:"HJSVEMRPsY4", title:"لوحة متابعة ثلاثية الأبعاد", en:"3d dashboard", dur:"3:47", desc:"" },
+  ]},
+];
+/* ============================================================ */
+
+const FLAT = []; GROUPS.forEach(g => g.items.forEach(it => FLAT.push({...it, group:g.name})));
+FLAT.forEach((v,i)=>v.n=i+1);
+const $ = s => document.querySelector(s);
+const secs = d => d.split(":").reduce((a,b)=>a*60+ +b,0);
+const fmt = s => { const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+  return (h? h+":"+String(m).padStart(2,"0") : m) + ":" + String(x).padStart(2,"0"); };
+
+let watched = new Set();
+try { watched = new Set(JSON.parse(localStorage.getItem("gb-watched")||"[]")); } catch(e){}
+const save = () => { try { localStorage.setItem("gb-watched", JSON.stringify([...watched])); } catch(e){} };
+
+let current = 0, player = null, ready = false;
+
+function renderList(filter=""){
+  const q = filter.trim().toLowerCase(); let shown = 0, html = "";
+  GROUPS.forEach(g=>{
+    const rows = g.items.map(it=>FLAT.find(f=>f.id===it.id))
+      .filter(v=>!q || (v.title+" "+v.en+" "+g.name).toLowerCase().includes(q));
+    if(!rows.length) return;
+    shown += rows.length;
+    const total = rows.reduce((a,v)=>a+secs(v.dur),0);
+    html += `<div class="group"><div class="group-title"><span>${g.name}</span><em>${fmt(total)}</em></div>` +
+      rows.map(v=>`<button type="button" class="item${v.n-1===current?" active":""}${watched.has(v.id)?" done":""}" data-i="${v.n-1}">
+        <span class="num">${watched.has(v.id)?"✓":v.n}</span>
+        <span class="t"><b>${v.title}</b><small>${v.en}</small></span>
+        <span class="d">${v.dur}</span></button>`).join("") + `</div>`;
+  });
+  $("#list").innerHTML = html || `<div class="empty">لا توجد نتائج لـ «${filter}»</div>`;
+  $("#visibleCount").textContent = shown + " / " + FLAT.length;
+}
+
+function renderStats(){
+  const total = FLAT.reduce((a,v)=>a+secs(v.dur),0);
+  $("#sCount").textContent = FLAT.length;
+  $("#sTotal").textContent = fmt(total);
+  $("#sDone").textContent = watched.size + " / " + FLAT.length;
+  $("#sBar").style.width = (watched.size/FLAT.length*100) + "%";
+}
+
+function renderMeta(){
+  const v = FLAT[current];
+  $("#mGroup").textContent = v.group;
+  $("#mPos").textContent = `التجربة ${v.n} من ${FLAT.length}`;
+  $("#mDur").textContent = v.dur;
+  $("#mTitle").textContent = v.title;
+  $("#mDesc").textContent = v.desc || "";
+  $("#mDesc").hidden = !v.desc;
+  $("#prevBtn").disabled = current===0;
+  $("#nextBtn").disabled = current===FLAT.length-1;
+  $("#markBtn").textContent = watched.has(v.id) ? "↺ إلغاء المشاهدة" : "✓ تمت المشاهدة";
+  const nx = FLAT[current+1];
+  $("#upNext").hidden = !nx;
+  if(nx){ $("#unImg").src = `https://i.ytimg.com/vi/${nx.id}/mqdefault.jpg`; $("#unTitle").textContent = nx.title; }
+  document.title = v.title + " · معرض تجارب Grok Bot";
+}
+
+function go(i, autoplay=true){
+  if(i<0 || i>=FLAT.length) return;
+  current = i;
+  if(location.hash !== "#v"+(i+1)) history.replaceState(null,"","#v"+(i+1));
+  renderMeta(); renderList($("#q").value);
+  if(ready){ autoplay ? player.loadVideoById(FLAT[i].id) : player.cueVideoById(FLAT[i].id); }
+  const a = document.querySelector(".item.active"); a && a.scrollIntoView({block:"nearest"});
+}
+
+function markWatched(id, on=true){ on ? watched.add(id) : watched.delete(id); save(); renderStats(); renderList($("#q").value); renderMeta(); }
+
+/* YouTube IFrame API */
+window.onYouTubeIframeAPIReady = function(){
+  player = new YT.Player("yt", {
+    videoId: FLAT[current].id,
+    playerVars: { rel:0, modestbranding:1, playsinline:1, hl:"ar" },
+    events: {
+      onReady: ()=>{ ready = true; },
+      onStateChange: e=>{
+        if(e.data === YT.PlayerState.ENDED){
+          markWatched(FLAT[current].id, true);
+          if($("#autoNext").checked && current < FLAT.length-1) go(current+1);
+        }
+      }
+    }
+  });
+};
+
+/* Events */
+$("#list").addEventListener("click", e=>{ const b=e.target.closest(".item"); if(b) go(+b.dataset.i); });
+$("#prevBtn").onclick = ()=>go(current-1);
+$("#nextBtn").onclick = ()=>go(current+1);
+$("#upNext").onclick = ()=>go(current+1);
+$("#markBtn").onclick = ()=>{ const id=FLAT[current].id; markWatched(id, !watched.has(id)); };
+$("#q").addEventListener("input", e=>renderList(e.target.value));
+$("#presentBtn").onclick = togglePresent;
+function togglePresent(){
+  document.body.classList.toggle("present");
+  if(document.body.classList.contains("present")) document.documentElement.requestFullscreen?.().catch(()=>{});
+  else if(document.fullscreenElement) document.exitFullscreen?.().catch(()=>{});
+}
+document.addEventListener("fullscreenchange", ()=>{ if(!document.fullscreenElement) document.body.classList.remove("present"); });
+document.addEventListener("keydown", e=>{
+  if(e.target.matches("input")) { if(e.key==="Escape") e.target.blur(); return; }
+  if(e.key==="ArrowLeft") go(current+1);
+  else if(e.key==="ArrowRight") go(current-1);
+  else if(e.key.toLowerCase()==="p" || e.key==="ح") togglePresent();
+  else if(e.key==="/"){ e.preventDefault(); $("#q").focus(); }
+});
+window.addEventListener("hashchange", ()=>{ const m=location.hash.match(/^#v(\d+)$/); if(m) go(+m[1]-1); });
+
+/* Init */
+const m = location.hash.match(/^#v(\d+)$/);
+if(m && +m[1]>=1 && +m[1]<=FLAT.length) current = +m[1]-1;
+renderStats(); renderMeta(); renderList();
+const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(s);
+</script>
+</body>
+</html>
